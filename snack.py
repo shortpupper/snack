@@ -17,6 +17,7 @@ so make it so that it could clear the screen or get rid of the last pos
 
 
 def main(stdscr):
+ doesDebug = False
  my, mx = stdscr.getmaxyx()
  py, px = 10, 10 #also starting pos
  ogpy, ogpx = py, px
@@ -41,20 +42,20 @@ def main(stdscr):
   #makes the bottom wall
   for i in range(mx-1):
    stdscr.addstr(my-1, i, wallTileCar)
-   wallYX += (my-1, i)
+   wallYX += [(my-1, i)]
   #makes the top wall
   for i in range(mx-1):
    stdscr.addstr(0, i, wallTileCar)
-   wallYX += (0, i)
+   wallYX += [(0, i)]
   #makes the left wall
   for i in range(my-1):
    stdscr.addstr(i, mx-1, wallTileCar)
-   wallYX += (i, mx-1)
+   wallYX += [(i, mx-1)]
   #makes the right wall
   for i in range(my):
    stdscr.addstr(i, 0, wallTileCar)
-   wallYX += (i, 0)
-  wallTiles = wallYX
+   wallYX += [(i, 0)]
+  return wallYX
  def hardCollide():
   y = []
   if (py-1, px) in pos: y.append(0)
@@ -77,13 +78,13 @@ def main(stdscr):
  for x in range(extraApples):
   k, l = rand(1, my-1), rand(1, mx-1)
   apples.append((k, l))
- if wall: makeWall()
+ if wall: wallTiles = makeWall()
  while True:
-  if doesSnackHitWall(): kko = 1
   stdscr.addstr(py, px, "%")
-  stdscr.addstr(5, 5, str(kko))
+  stdscr.addstr(5, 5, str(kko)) if doesDebug else None
   if len(pos) > 0: stdscr.addstr(pos[-1][0], pos[-1][1], "#")
   pos.append((py, px))# if tst != 1 or len(pos) <= 1 else None
+  if doesSnackHitWall(): kko = 1
   if doesSnackHitSnake() and doesdie: kko = 1
   if len(pos) > length:
    ok = pos[0]
@@ -102,14 +103,17 @@ def main(stdscr):
    stdscr.addstr(x[0], x[1], "@", curses.color_pair(10))
   stdscr.addstr(k, l, "@", curses.color_pair(10))
   #stdscr.addstr(my-4, 2, str([str(x).replace("0", "up").replace("1", "down").replace("2", "right").replace("3", "left") for x in hardCollide()])+" "*10)
-  stdscr.addstr(my-4, 2, str([x for x in range(4) if x not in hardCollide()]))
-  stdscr.addstr(my-5, 2, str([str(x).replace("0", "up").replace("1", "down").replace("2", "right").replace("3", "left") for x in range(4) if x not in hardCollide()]))
+  if doesDebug:
+   stdscr.addstr(my-4, 2, str([x for x in range(4) if x not in hardCollide()]))
+   stdscr.addstr(my-5, 2, str([str(x).replace("0", "up").replace("1", "down").replace("2", "right").replace("3", "left") for x in range(4) if x not in hardCollide()]))
+   stdscr.addstr(my-6, 2, str(wallTiles[:4]))
   c = stdscr.getch()
   #curses.halfdelay(10)
   # y, x, string
-  stdscr.addstr(my-1, 2, str(c))
-  stdscr.addstr(my-2, 2, str(hardCollide()))
-  stdscr.addstr(my-3, 2, str([str(x).replace("0", "up").replace("1", "down").replace("2", "right").replace("3", "left") for x in hardCollide()])+" "*10)
+  if doesDebug:
+   stdscr.addstr(my-1, 2, str(c))
+   stdscr.addstr(my-2, 2, str(hardCollide()))
+   stdscr.addstr(my-3, 2, str([str(x).replace("0", "up").replace("1", "down").replace("2", "right").replace("3", "left") for x in hardCollide()])+" "*10)
   #stdscr.addstr(my-3, 2, str(pos))
   #stdscr.addstr(my-4, 2, str(0 if (py, px) in pos else 1))
   #stdscr.addstr(my-1, 8, str(apples))
@@ -154,7 +158,7 @@ def main(stdscr):
   #  print("Window")
   if c == 10 and kko == 1:
    stdscr.clear()
-   if wall: makeWall()
+   if wall: wallTiles = makeWall()
    kko = 0
    pos = []
    length = oglenght
